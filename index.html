@@ -4,7 +4,98 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro de Horarios</title>
-  <link rel="stylesheet" href="styles.css"> <!-- Vincula el archivo CSS -->
+  <style>
+    /* Estilos generales */
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url('https://wallpapers.com/images/hd/dark-abstract-coil-pc-za6ag26yfqxqp6gc.jpg'); /* Cambia esta URL por tu imagen de fondo */
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: #fff;
+  filter: brightness(0.6); /* Oscurecer la imagen de fondo */
+}
+
+/* Contenedor principal */
+form {
+  background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro con transparencia */
+  width: 500px; /* Ancho fijo */
+  height: 400px; /* Altura fija */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content:center;
+  box-sizing: border-box;
+}
+
+/* Título */
+h1 {
+  text-align: center;
+  font-size: 1.5em;
+  margin: 0 0 10px;
+}
+
+/* Estilos de los campos de entrada */
+label {
+  font-size: 1em;
+  margin-bottom: 5px;
+}
+
+input[type="text"], input[type="time"], select {
+  width: 95%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 5px;
+  background-color: rgba(148, 142, 142, 0.712);
+  color: #fcf7f7;
+  font-size: 0.9em;
+  transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus, input[type="time"]:focus, select:focus {
+  border-color: #4CAF50; /* Color de borde al enfocar */
+  outline: none;
+}
+
+/* Estilo de los turnos en la misma línea */
+.form-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.form-row input[type="time"] {
+  width: 48%; /* Hacer los campos de tiempo más pequeños */
+}
+
+/* Estilo del botón */
+button {
+  width: 100%;
+  padding: 10px;
+  background-color: rgba(252, 64, 17, 0.979); /* Verde con transparencia */
+  color: #fff;
+  font-size: 1em;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: rgb(241, 235, 235); /* Cambio de color al pasar el ratón */
+  color: red;
+}
+
+  </style><!-- Vincula el archivo CSS -->
 </head>
 <body>
   <form id="horariosForm">
@@ -52,6 +143,110 @@
 
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js"></script>
-  <script src="app.js" type="module"></script>
+  <script type="module">
+    // Importar las funciones necesarias desde Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
+// Configuración de Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyACRLcbjVyIfdPxocD6gM6hccZieHQHSEQ",
+  authDomain: "organizacion-empleados.firebaseapp.com",
+  databaseURL: "https://organizacion-empleados-default-rtdb.firebaseio.com",
+  projectId: "organizacion-empleados",
+  storageBucket: "organizacion-empleados.firebasestorage.app",
+  messagingSenderId: "653857171257",
+  appId: "1:653857171257:web:f49763a9cbad1e4eab2ae8",
+  measurementId: "G-PM0ND8L2P3"
+};
+
+// Inicializar Firebase
+try {
+  const app = initializeApp(firebaseConfig);
+  console.log("Firebase inicializado:", app.name);
+} catch (error) {
+  console.error("Error al inicializar Firebase:", error);
+}
+
+const database = getDatabase();
+
+// Función para registrar un nuevo horario
+function registrarHorario(event) {
+  event.preventDefault();
+
+  // Obtener los valores de los campos del formulario
+  const nombre = document.getElementById('nombre').value.trim();
+  const dia = document.getElementById('dia').value;
+  const turno1_inicio = document.getElementById('turno1_inicio').value;
+  const turno1_fin = document.getElementById('turno1_fin').value;
+  const turno2_inicio = document.getElementById('turno2_inicio').value;
+  const turno2_fin = document.getElementById('turno2_fin').value;
+
+  // Validar que al menos un turno esté completo
+  if (!nombre || !dia || (!turno1_inicio && !turno2_inicio)) {
+    alert('Por favor, completa los campos obligatorios (nombre, día y al menos un turno).');
+    return;
+  }
+
+  // Crear un objeto con la información del horario
+  const horario = { nombre, dia };
+
+  // Agregar los turnos solo si tienen valores
+  if (turno2_inicio && turno2_fin) {
+    horario.turno2_inicio = turno2_inicio;
+    horario.turno2_fin = turno2_fin;
+  }
+  if (turno1_inicio && turno1_fin) {
+    horario.turno1_inicio = turno1_inicio;
+    horario.turno1_fin = turno1_fin;
+  }
+  
+  // Guardar la información en Firebase usando push()
+  const referencia = ref(database, `horarios/${nombre}`);
+  const nuevaReferencia = push(referencia); // Generar una clave única
+
+  set(nuevaReferencia, horario)
+    .then(() => {
+      alert('Horario registrado correctamente');
+      document.getElementById('horariosForm').reset(); // Limpiar el formulario
+    })
+    .catch((error) => {
+      console.error('Error al guardar en Firebase:', error);
+      alert('Hubo un error al registrar el horario.');
+    });
+}
+
+// Inicializar formulario
+try {
+  const form = document.getElementById('horariosForm');
+  if (form) {
+    form.addEventListener('submit', registrarHorario);
+  } else {
+    console.error("Formulario no encontrado: verifica el ID.");
+  }
+} catch (error) {
+  console.error("Error al inicializar el evento del formulario:", error);
+}
+
+// Función para obtener datos de prueba (opcional)
+function obtenerDatos() {
+  const referencia = ref(database, 'horarios/');
+  get(referencia)
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        console.log('Datos obtenidos:', snapshot.val());
+      } else {
+        console.log('No hay datos disponibles');
+      }
+    })
+    .catch((error) => {
+      console.error('Error al obtener los datos:', error);
+    });
+}
+
+// Llamar a obtenerDatos para probar la conexión
+obtenerDatos();
+
+  </script>
 </body>
 </html>
