@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Horarios</title>
+  <link rel="stylesheet" href="styles.css"> <!-- Vincula el archivo CSS -->
+</head>
+<body>
+  <form id="horariosForm">
+    <h1>Registrar Horario</h1>
+    <label>
+      Nombre:
+      <input type="text" id="nombre" required>
+    </label>
+    <label>
+      Día:
+      <select id="dia" required>
+        <option value="">Seleccionar Día</option>
+        <option value="Lunes">Lunes</option>
+        <option value="Martes">Martes</option>
+        <option value="Miércoles">Miércoles</option>
+        <option value="Jueves">Jueves</option>
+        <option value="Viernes">Viernes</option>
+        <option value="Sábado">Sábado</option>
+        <option value="Domingo">Domingo</option>
+      </select>
+    </label>
+    <div class="form-row">
+      <label>
+        Entrada:
+        <input type="time" id="turno1_inicio">
+      </label>
+      <label>
+        Salida:
+        <input type="time" id="turno1_fin">
+      </label>
+    </div>
+    <div class="form-row">
+      <label>
+        Entrada:
+        <input type="time" id="turno2_inicio">
+      </label>
+      <label>
+        Salida:
+        <input type="time" id="turno2_fin">
+      </label>
+    </div>
+    <button type="submit">Registrar</button>
+  </form>
+  
+
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js"></script>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
